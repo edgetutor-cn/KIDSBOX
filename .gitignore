@@ -1,0 +1,24 @@
+# 构建/调试产物（不推送到静态站仓库）
+__pycache__/
+build.log
+gen_audio.log
+gen_zh.log
+*.pyc
+.DS_Store
+
+# 构建脚本与中间产物（含本机绝对路径，仅本地用）
+build_kidsbox.py
+gen_audio.py
+gen_zh.py
+_clean_data.py
+_collect_zh_tasks.py
+_apply_zh.py
+_probe_pdf.py
+audio_tasks.json
+zh_tasks.json
+zh_map.json
+zh_failed.json
+
+# GitHub API 响应文件（可能含账号信息）
+resp_create.json
+resp_user.json

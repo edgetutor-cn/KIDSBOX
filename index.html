@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<script src="gate.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EDGE Tutor · Kids Box 课前预习</title>
+<link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+<link rel="preconnect" href="https://fastly.jsdelivr.net">
+<link rel="preconnect" href="https://testingcf.jsdelivr.net">
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="dns-prefetch" href="https://gcore.jsdelivr.net">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;
+    background:linear-gradient(135deg,#eef2ff 0%,#faf5ff 50%,#fdf2f8 100%); min-height:100vh; color:#111827; padding:24px 14px; }
+  .wrap { max-width:1080px; margin:0 auto; }
+  .top { text-align:center; margin-bottom:22px; }
+  .brand { display:inline-flex; align-items:center; gap:12px; margin-bottom:6px; }
+  .brand h1 { font-size:21px; font-weight:800;
+    background:linear-gradient(90deg,#0052CC,#0066FF,#3399FF); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+  .sub { font-size:13px; color:#6b7280; }
+  .pill { display:inline-block; margin-top:6px; font-size:11px; font-weight:700; background:#dcfce7; color:#166534; padding:3px 10px; border-radius:9999px; }
+
+  .portal { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:18px; }
+  .series-card { --c:#0052CC; background:white; border-radius:18px; overflow:hidden; cursor:pointer;
+    box-shadow:0 6px 16px rgba(0,0,0,.07); border:1px solid #f1f5f9; transition:transform .2s,box-shadow .2s; display:flex; flex-direction:column; }
+  .series-card:hover { transform:translateY(-4px); box-shadow:0 16px 30px rgba(0,0,0,.12); }
+  .sc-head { height:6px; background:var(--c); }
+  .sc-body { padding:18px 20px 16px; display:flex; flex-direction:column; gap:10px; flex:1; }
+  .sc-icon { width:46px; height:46px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:24px; color:white; background:var(--c); }
+  .sc-name { font-size:18px; font-weight:800; color:#1f2937; }
+  .sc-desc { font-size:12.5px; color:#6b7280; line-height:1.7; }
+  .sc-foot { display:flex; align-items:center; justify-content:space-between; margin-top:auto; padding-top:10px; }
+  .sc-prog { font-size:12px; font-weight:700; color:#16a34a; }
+  .sc-go { font-size:13px; font-weight:700; color:var(--c); }
+  .err { padding:20px; background:#fef2f2; border:1px solid #fca5a5; border-radius:12px; color:#991b1b; font-size:14px; }
+
+  .viewer { display:none; }
+  .back-bar { display:flex; align-items:center; gap:14px; margin-bottom:14px; }
+  .back-btn { padding:8px 16px; border:1px solid #e5e7eb; background:white; border-radius:10px; font-size:13px; font-weight:600; color:#374151; cursor:pointer; }
+  .back-btn:hover { background:#f3f4f6; }
+  .viewer-title { font-size:16px; font-weight:800; color:#0052CC; }
+
+  .audio-bar { display:flex; align-items:center; gap:12px; background:white; border-radius:14px; padding:12px 18px; box-shadow:0 4px 12px rgba(0,0,0,.06); margin-bottom:18px; flex-wrap:wrap; }
+  .audio-bar .hint { font-size:12px; color:#64748b; }
+  .audio-bar .hint b { color:#0e7490; }
+  .play-all { margin-left:auto; padding:8px 16px; border:none; border-radius:10px; cursor:pointer; background:linear-gradient(135deg,#0891b2,#06b6d4); color:white; font-weight:600; font-size:13px; display:flex; align-items:center; gap:6px; }
+  .play-all:disabled { opacity:.6; cursor:default; }
+
+  .unit-tabs { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-bottom:14px; }
+  .unit-tab { padding:7px 15px; border-radius:12px; background:white; border:1px solid #e5e7eb; font-size:13px; color:#374151; cursor:pointer; transition:all .2s; }
+  .unit-tab.active { background:#eff6ff; border-color:#0052CC; color:#0052CC; font-weight:700; }
+
+  .lesson-tabs { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:18px; }
+  .lesson-tab { padding:7px 14px; border-radius:10px; background:white; border:1px solid #e5e7eb; font-size:12.5px; color:#374151; cursor:pointer; transition:all .2s; max-width:260px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .lesson-tab:hover { border-color:#93c5fd; color:#0052CC; }
+  .lesson-tab.active { background:#eff6ff; border-color:#0052CC; color:#0052CC; font-weight:700; box-shadow:0 6px 16px rgba(0,82,204,.15); }
+  .type-tag { margin-left:6px; padding:2px 8px; border-radius:20px; background:#eef2ff; color:#4338ca; font-size:11px; font-weight:700; }
+
+  .lesson-head { font-size:17px; font-weight:800; color:#1f2937; margin-bottom:6px; }
+  .lesson-sub { font-size:12px; color:#9ca3af; margin-bottom:14px; }
+
+  .slide-card { background:white; border-radius:16px; padding:16px 18px; margin-bottom:14px; box-shadow:0 4px 12px rgba(0,0,0,.05); border:1px solid #f3f4f6; }
+  .slide-no { display:inline-block; font-size:11px; font-weight:800; color:#0052CC; background:#eff6ff; border-radius:8px; padding:3px 10px; margin-bottom:10px; }
+  .chip-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:10px; }
+  .word-card { background:#f8fafc; border:1px solid #eef2f7; border-radius:12px; padding:12px 14px; position:relative; transition:transform .15s,box-shadow .15s; }
+  .word-card:hover { transform:translateY(-2px); box-shadow:0 8px 18px rgba(0,0,0,.08); }
+  .word-en { font-size:16px; font-weight:700; color:#0052CC; letter-spacing:.3px; padding-right:36px; overflow-wrap:anywhere; line-height:1.3; }
+  .word-card.novoc { background:#fbfbfc; }
+  .word-card.novoc .word-en { color:#475569; font-weight:600; }
+  .word-zh { font-size:13px; color:#64748b; margin-top:4px; line-height:1.5; padding-right:36px; overflow-wrap:anywhere; }
+  .word-card.novoc .word-zh { color:#64748b; }
+  .speak-btn { position:absolute; top:9px; right:9px; width:30px; height:30px; border-radius:50%; border:none; background:linear-gradient(135deg,#0052CC,#0066FF); color:white; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:12px; transition:transform .15s; box-shadow:0 3px 8px rgba(0,82,204,.3); }
+  .speak-btn:hover { transform:scale(1.12); }
+  .speak-btn.speaking { animation:pulse .6s infinite; }
+  @keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(0,82,204,.5)} 50%{box-shadow:0 0 0 8px rgba(0,82,204,0)} }
+  .img-gallery { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:8px; margin-top:12px; }
+  .img-gallery img { width:100%; border-radius:10px; border:1px solid #eef2f7; background:#f8fafc; }
+  .footer { text-align:center; font-size:11.5px; color:#9ca3af; margin-top:26px; line-height:1.7; }
+
+  /* 简洁 / 课本 预习模式切换 */
+  .mode-bar { background:white; border-radius:14px; padding:12px 14px; box-shadow:0 4px 12px rgba(0,0,0,.05); margin-bottom:16px; border:1px solid #f3f4f6; }
+  .mode-switch { display:flex; gap:10px; }
+  .mode-btn { flex:1; text-align:left; padding:12px 14px; border-radius:12px; border:2px solid #e5e7eb; background:#f8fafc; cursor:pointer; transition:all .2s; }
+  .mode-btn:hover { border-color:#93c5fd; }
+  .mode-btn.active { border-color:#0052CC; background:#eff6ff; box-shadow:0 6px 16px rgba(0,82,204,.12); }
+  .mode-btn .mt { font-size:14px; font-weight:800; color:#1f2937; display:flex; align-items:center; gap:7px; }
+  .mode-btn .md { font-size:11.5px; color:#6b7280; margin-top:4px; line-height:1.5; }
+  .mode-btn.active .mt { color:#0052CC; }
+  .mode-tag-easy { font-size:10px; font-weight:800; padding:2px 8px; border-radius:20px; background:#dcfce7; color:#166534; }
+  .mode-tag-full { font-size:10px; font-weight:800; padding:2px 8px; border-radius:20px; background:#fef3c7; color:#92400e; }
+  .simple-panel { background:white; border-radius:16px; padding:16px 18px; margin-bottom:14px; box-shadow:0 4px 12px rgba(0,0,0,.05); border:1px solid #f3f4f6; }
+  .simple-title { font-size:14px; font-weight:800; color:#1f2937; margin-bottom:4px; }
+  .simple-meta { font-size:12px; color:#9ca3af; margin-bottom:12px; line-height:1.6; }
+  .simple-imgs { display:grid; grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); gap:8px; margin-top:14px; }
+  .simple-imgs img { width:100%; border-radius:10px; border:1px solid #eef2f7; background:#f8fafc; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="brand"><h1>EDGE Tutor · Kids Box 课前预习</h1></div>
+    <div class="sub">剑桥少儿英语 Kid's Box 教材 · 课前单词 / 句型预习</div>
+    <div class="pill">发音：本地 Kokoro 神经网络 TTS（英式 bf_emma）· 离线可用</div>
+  </div>
+
+  <div id="portal" class="portal"></div>
+
+  <div id="viewer" class="viewer">
+    <div class="back-bar">
+      <button class="back-btn" id="backBtn">← 返回级别</button>
+      <div class="viewer-title" id="viewerTitle"></div>
+    </div>
+    <div class="audio-bar">
+      <span class="hint">点击单词/句子右侧 <b>🔊</b> 听标准英式发音；无网络时自动回退系统语音。</span>
+      <button class="play-all" id="playAllBtn"><i class="fa fa-play"></i> 朗读本课单词</button>
+    </div>
+    <div class="unit-tabs" id="unitTabs"></div>
+    <div class="lesson-tabs" id="lessonTabs"></div>
+    <div id="lessonContent"></div>
+  </div>
+
+  <div class="footer">EDGE Tutor 外教课 · Kids Box 预习站 · 内容提取自原版教材，仅供学员课前预习使用</div>
+</div>
+
+<script>
+// ===================== 音频加速层（复用 Reading 验证过的方案）=====================
+// 根因：资产托管在 GitHub/jsDelivr，国内首字节 2~8s；对策：首响镜像探测 + blob 缓存 + SW 跨会话持久。
+const MIRRORS = [
+  'https://testingcf.jsdelivr.net/gh/edgetutor-cn/KIDSBOX@master/',
+  'https://gcore.jsdelivr.net/gh/edgetutor-cn/KIDSBOX@master/',
+  'https://cdn.jsdelivr.net/gh/edgetutor-cn/KIDSBOX@master/',
+  'https://fastly.jsdelivr.net/gh/edgetutor-cn/KIDSBOX@master/',
+  'https://edgetutor-cn.github.io/KIDSBOX/'
+];
+let AUDIO_BASE = MIRRORS[0];
+const PROBE_FILE = 'data/index.json';
+
+const _blobCache = new Map();
+const _audioEls = new Map();
+function uniq(a){ return [...new Set(a)]; }
+// 竞速取音频：5 个镜像同时发，谁先返回用谁（首字节最快，避免单镜像卡顿）
+function fetchBlob(rel){
+  if(_blobCache.has(rel)) return _blobCache.get(rel);
+  const order = uniq([AUDIO_BASE].concat(MIRRORS));
+  const p = (async()=>{
+    let ctrlList=[];
+    const attempts = order.map(base=>{
+      const ctrl=new AbortController(); ctrlList.push(ctrl);
+      const to=setTimeout(()=>ctrl.abort(), 8000);
+      return fetch(base+rel, {signal:ctrl.signal, cache:'force-cache'})
+        .then(r=>{ clearTimeout(to); if(!r.ok) throw new Error('http '+r.status); return r.blob(); })
+        .then(b=>{ ctrlList.forEach(c=>{ if(c!==ctrl) try{c.abort();}catch(e){} }); return b; })
+        .catch(e=>{ clearTimeout(to); ctrl.abort(); throw e; });
+    });
+    const b = await Promise.any(attempts);
+    return URL.createObjectURL(b);
+  })();
+  _blobCache.set(rel, p);
+  return p;
+}
+// 安静预取（单镜像，不竞速）：用于进课后后台把本课音频拉成本地 blob
+function prefetchOne(rel){
+  if(_blobCache.has(rel)) return _blobCache.get(rel);
+  const base=AUDIO_BASE||MIRRORS[0];
+  const p=(async()=>{ const r=await fetch(base+rel,{cache:'force-cache'}); if(!r.ok) throw new Error('http '+r.status); return URL.createObjectURL(await r.blob()); })();
+  _blobCache.set(rel, p);
+  return p;
+}
+// 进课程后静默预取本课所有单词音频（4 并发），点哪个都命中本地、零延迟
+function prefetchLessonAudio(le){
+  const seen=new Set(); const urls=[];
+  le.slides.forEach(s=>(s.chips||[]).forEach(ch=>{ if(ch.a && !seen.has(ch.a)){ seen.add(ch.a); urls.push(ch.a); } }));
+  if(!urls.length) return;
+  let i=0, active=0;
+  (function pump(){
+    while(i<urls.length && active<4){
+      const u=urls[i++]; active++;
+      prefetchOne(u).catch(()=>{}).finally(()=>{ active--; pump(); });
+    }
+  })();
+}
+function detectFastestCDN(){
+  let won=false;
+  MIRRORS.forEach(base=>{
+    const ctrl=new AbortController();
+    const to=setTimeout(()=>ctrl.abort(), 3000);
+    fetch(base+PROBE_FILE, {method:'HEAD', cache:'no-store', signal:ctrl.signal})
+      .then(r=>{ clearTimeout(to); if(r.ok && !won){ won=true; AUDIO_BASE=base; window.__AUDIO_BASE=base; console.log('[audio] 选定最快镜像:', base); } })
+      .catch(()=>clearTimeout(to));
+  });
+}
+async function playAudio(url, text, btn){
+  if(btn){ document.querySelectorAll('.speak-btn.speaking').forEach(b=>b.classList.remove('speaking')); btn.classList.add('speaking'); }
+  const stop=()=>{ if(btn) btn.classList.remove('speaking'); };
+  if(!url){ if(text) fallbackSpeak(text,btn); return; }
+  try{
+    // 1) 命中本地 blob 缓存（进课后已预取）-> 零网络延迟，直接播
+    if(_blobCache.has(url)){
+      const objUrl=await _blobCache.get(url);
+      _playObj(url, objUrl, stop); return;
+    }
+    // 2) 未命中：用最快镜像流式直连，首字节即响（不等整段下完）
+    const base=AUDIO_BASE||MIRRORS[0];
+    let au=_audioEls.get(url);
+    if(!au){ au=new Audio(); _audioEls.set(url,au); }
+    au.onended=stop;
+    au.onerror=()=>{ fetchBlob(url).then(o=>_playObj(url,o,stop)).catch(()=>{ stop(); if(text) fallbackSpeak(text,btn); }); };
+    au.src=base+url;
+    try{ au.currentTime=0; }catch(e){}
+    au.play().catch(()=>{});
+    fetchBlob(url).catch(()=>{}); // 3) 后台填缓存，二次点击零延迟
+  }catch(e){ stop(); if(text) fallbackSpeak(text,btn); }
+}
+function _playObj(url, objUrl, stop){
+  let au=_audioEls.get(url);
+  if(!au){ au=new Audio(); _audioEls.set(url,au); }
+  try{ au.pause(); }catch(e){}
+  au.onended=stop; au.onerror=stop;
+  au.src=objUrl;
+  try{ au.currentTime=0; }catch(e){}
+  au.play().catch(stop);
+}
+function fallbackSpeak(text, btn){
+  if(!text || !('speechSynthesis' in window)) return;
+  const u=new SpeechSynthesisUtterance(text);
+  u.lang='en-GB'; u.rate=0.95;
+  const v=pickVoice(); if(v) u.voice=v;
+  u.onend=()=>{ if(btn) btn.classList.remove('speaking'); };
+  u.onerror=()=>{ if(btn) btn.classList.remove('speaking'); };
+  speechSynthesis.cancel(); speechSynthesis.speak(u);
+}
+let _voices=[];
+function refreshVoices(){ if('speechSynthesis' in window) _voices=speechSynthesis.getVoices()||[]; }
+function pickVoice(){
+  if(!_voices.length) return null;
+  return _voices.find(v=>/^en[-_]GB/i.test(v.lang)) || _voices.find(v=>/^en/i.test(v.lang)) || _voices[0];
+}
+if('speechSynthesis' in window){ speechSynthesis.onvoiceschanged=refreshVoices; refreshVoices(); }
+
+function registerAudioSW(){
+  if(!('serviceWorker' in navigator)) return;
+  if(location.protocol!=='https:' && location.hostname!=='localhost' && location.hostname!=='127.0.0.1') return;
+  window.addEventListener('load', ()=>{ navigator.serviceWorker.register('sw.js').catch(()=>{}); });
+}
+
+// ===================== 站点导航 / 渲染 =====================
+const LEVEL_COLORS = { L0:'#0ea5e9', L1:'#0052CC', L2:'#7c3aed', L3:'#db2777', L4:'#ea580c', L5:'#16a34a', L6:'#b45309' };
+let INDEX=null, CUR=null; // INDEX: 级别摘要; CUR: {level,data,unitIdx,lessonIdx}
+const TYPE_LABEL = { vocab:'词汇', story:'故事', grammar:'语法', cross:'跨学科', lesson:'课文' };
+
+function el(html){ const d=document.createElement('div'); d.innerHTML=html.trim(); return d.firstChild; }
+
+function renderPortal(){
+  document.getElementById('viewer').style.display='none';
+  const p=document.getElementById('portal');
+  p.style.display='grid'; p.innerHTML='';
+  if(!INDEX){ p.innerHTML='<div class="err">数据加载失败，请刷新重试。</div>'; return; }
+  INDEX.forEach(m=>{
+    const c=el(`<div class="series-card" style="--c:${LEVEL_COLORS[m.level]||'#0052CC'}">
+      <div class="sc-head"></div>
+      <div class="sc-body">
+        <div class="sc-icon"><i class="fa fa-book"></i></div>
+        <div class="sc-name">${m.title}</div>
+        <div class="sc-desc">${m.units} 个单元 · ${m.lessons} 课预习</div>
+        <div class="sc-foot"><span class="sc-prog">已就绪</span><span class="sc-go">进入预习 →</span></div>
+      </div></div>`);
+    c.onclick=()=>openLevel(m.level);
+    p.appendChild(c);
+  });
+}
+
+async function openLevel(levelKey){
+  const m=INDEX.find(x=>x.level===levelKey); if(!m) return;
+  document.getElementById('portal').style.display='none';
+  const v=document.getElementById('viewer'); v.style.display='block';
+  document.getElementById('viewerTitle').textContent=m.title;
+  // 取该级别完整数据
+  let data;
+  if(CUR && CUR.level===levelKey && CUR.data){ data=CUR.data; }
+  else {
+    try{ const res=await fetch(`data/${levelKey}.json`, {cache:'force-cache'}); data=await res.json(); }
+    catch(e){ document.getElementById('lessonContent').innerHTML='<div class="err">加载级别数据失败。</div>'; return; }
+  }
+  CUR={ level:levelKey, data, unitIdx:0, lessonIdx:0 };
+  renderUnitTabs();
+  renderLessonTabs();
+  renderLesson();
+}
+
+function renderUnitTabs(){
+  const box=document.getElementById('unitTabs'); box.innerHTML='';
+  CUR.data.units.forEach((u,i)=>{
+    const t=el(`<div class="unit-tab${i===CUR.unitIdx?' active':''}">${u.name||('U'+u.num)}</div>`);
+    t.onclick=()=>{ CUR.unitIdx=i; CUR.lessonIdx=0; renderUnitTabs(); renderLessonTabs(); renderLesson(); };
+    box.appendChild(t);
+  });
+}
+
+function renderLessonTabs(){
+  const box=document.getElementById('lessonTabs'); box.innerHTML='';
+  const unit=CUR.data.units[CUR.unitIdx];
+  unit.lessons.forEach((le,i)=>{
+    const tag=TYPE_LABEL[le.type]?`<span class="type-tag">${TYPE_LABEL[le.type]}</span>`:'';
+    const t=el(`<div class="lesson-tab${i===CUR.lessonIdx?' active':''}">${le.name}${tag}</div>`);
+    t.onclick=()=>{ CUR.lessonIdx=i; CUR.lessonMode='simple'; renderLessonTabs(); renderLesson(); };
+    box.appendChild(t);
+  });
+}
+
+function renderLesson(){
+  const unit=CUR.data.units[CUR.unitIdx];
+  const le=unit.lessons[CUR.lessonIdx];
+  if(!CUR.lessonMode) CUR.lessonMode='simple';   // 每节课默认进「简洁预习」
+  const box=document.getElementById('lessonContent');
+  box.innerHTML='';
+
+  const typeTag = le.type ? `<span class="type-tag">${escapeHtml(le.type)}</span>` : '';
+  const head=el(`<div><div class="lesson-head">${escapeHtml(le.name)} ${typeTag}</div>
+    <div class="lesson-sub">${escapeHtml(unit.name||('U'+unit.num))} · 共 ${le.slides.length} 页 · 点击 🔊 听发音</div></div>`);
+  box.appendChild(head);
+
+  // 模式切换条 + 说明（让学员一眼知道哪个最简单 / 哪个最全）
+  const bar=el(`<div class="mode-bar">
+    <div class="mode-switch">
+      <button class="mode-btn ${CUR.lessonMode==='simple'?'active':''}" data-mode="simple">
+        <div class="mt">🌿 简洁预习 <span class="mode-tag-easy">最快</span></div>
+        <div class="md">只列本课核心单词 + 少量配图，几分钟快速过一遍发音</div>
+      </button>
+      <button class="mode-btn ${CUR.lessonMode==='full'?'active':''}" data-mode="full">
+        <div class="mt">📖 课本预习 <span class="mode-tag-full">最全</span></div>
+        <div class="md">逐页还原课件：单词 + 句子 + 全部配图，深度预习</div>
+      </button>
+    </div>
+  </div>`);
+  bar.querySelectorAll('.mode-btn').forEach(b=>{
+    b.onclick=()=>{ CUR.lessonMode=b.getAttribute('data-mode'); renderLesson(); };
+  });
+  box.appendChild(bar);
+
+  if(CUR.lessonMode==='full') renderLessonFull(le, box);
+  else renderLessonSimple(le, box);
+
+  // 绑定「朗读本课单词」
+  const pb=document.getElementById('playAllBtn');
+  pb.disabled=false; pb.innerHTML='<i class="fa fa-play"></i> 朗读本课单词';
+  pb.onclick=()=>playLessonWords(le, CUR.lessonMode, pb);
+
+  // 进课后立即后台预取本课所有单词音频 -> 点哪个都秒响
+  prefetchLessonAudio(le);
+}
+
+// 简洁版：本课核心单词（有发音、去重）平铺 + 少量配图
+function renderLessonSimple(le, box){
+  const seen=new Set(); const vocab=[];
+  le.slides.forEach(s=>(s.chips||[]).forEach(ch=>{ if(ch.a && !seen.has(ch.t)){ seen.add(ch.t); vocab.push(ch); } }));
+  const iseen=new Set(); const imgs=[];
+  le.slides.forEach(s=>(s.imgs||[]).forEach(src=>{ if(!iseen.has(src)){ iseen.add(src); imgs.push(src); } }));
+  imgs.splice(6);
+
+  const panel=el(`<div class="simple-panel">
+    <div class="simple-title">本课核心单词 · ${vocab.length} 个</div>
+    <div class="simple-meta">点 🔊 听英式发音，或直接点「朗读本课单词」顺序播放。想看完整课件请切到「课本预习」。</div>
+  </div>`);
+  const g=el('<div class="chip-grid"></div>');
+  if(vocab.length){
+    vocab.forEach(ch=>{
+      const w=el(`<div class="word-card"><div class="word-en">${escapeHtml(ch.t)}</div>${zhOf(ch)}
+        <button class="speak-btn"><i class="fa fa-volume-up"></i></button></div>`);
+      w.querySelector('.speak-btn').onclick=(e)=>playAudio(ch.a, ch.t, e.currentTarget);
+      g.appendChild(w);
+    });
+  } else {
+    g.appendChild(el('<div class="simple-meta">本课为句型 / 故事课，核心单词较少，请切到「课本预习」看完整内容。</div>'));
+  }
+  panel.appendChild(g);
+  if(imgs.length){
+    const gal=el('<div class="simple-imgs"></div>');
+    imgs.forEach(src=>{
+      const im=el(`<img loading="lazy" alt="">`);
+      const cdn=(AUDIO_BASE||MIRRORS[0])+src;
+      im.src=cdn; let triedRel=false;
+      im.onerror=()=>{ if(!triedRel){ triedRel=true; im.src=src; } else { im.style.display='none'; } };
+      gal.appendChild(im);
+    });
+    panel.appendChild(gal);
+  }
+  box.appendChild(panel);
+}
+
+// 课本版：逐页还原（全部 chip + 全部配图）
+function renderLessonFull(le, box){
+  le.slides.forEach(s=>{
+    const hasChips = s.chips && s.chips.length;
+    const hasImgs = s.imgs && s.imgs.length;
+    if(!hasChips && !hasImgs) return;
+    const card=el(`<div class="slide-card"><span class="slide-no">第 ${s.idx} 页</span></div>`);
+    if(s.chips && s.chips.length){
+      const g=el('<div class="chip-grid"></div>');
+      s.chips.forEach(ch=>{
+        if(ch.a){
+          const w=el(`<div class="word-card"><div class="word-en">${escapeHtml(ch.t)}</div>${zhOf(ch)}
+            <button class="speak-btn"><i class="fa fa-volume-up"></i></button></div>`);
+          w.querySelector('.speak-btn').onclick=(e)=>playAudio(ch.a, ch.t, e.currentTarget);
+          g.appendChild(w);
+        } else {
+          const w=el(`<div class="word-card novoc"><div class="word-en">${escapeHtml(ch.t)}</div>${zhOf(ch)}</div>`);
+          g.appendChild(w);
+        }
+      });
+      card.appendChild(g);
+    }
+    if(s.imgs && s.imgs.length){
+      const gal=el('<div class="img-gallery"></div>');
+      s.imgs.forEach(src=>{
+        const im=el(`<img loading="lazy" alt="">`);
+        const cdn=(AUDIO_BASE||MIRRORS[0])+src;
+        im.src=cdn; let triedRel=false;
+        im.onerror=()=>{ if(!triedRel){ triedRel=true; im.src=src; } else { im.style.display='none'; } };
+        gal.appendChild(im);
+      });
+      card.appendChild(gal);
+    }
+    box.appendChild(card);
+  });
+}
+
+async function playLessonWords(le, mode, btn){
+  const items=[];
+  if(mode==='full'){
+    le.slides.forEach(s=>(s.chips||[]).forEach(ch=>{ if(ch.a) items.push(ch); }));
+  } else {
+    const seen=new Set();
+    le.slides.forEach(s=>(s.chips||[]).forEach(ch=>{ if(ch.a && !seen.has(ch.t)){ seen.add(ch.t); items.push(ch); } }));
+  }
+  if(!items.length) return;
+  btn.disabled=true; const old=btn.innerHTML; btn.innerHTML='<i class="fa fa-spinner fa-spin"></i> 播放中…';
+  for(const ch of items){
+    try{
+      const objUrl=await fetchBlob(ch.a);
+      await new Promise((resolve)=>{
+        let au=_audioEls.get(ch.a); if(!au){ au=new Audio(); _audioEls.set(ch.a,au); }
+        au.src=objUrl; au.onended=resolve; au.onerror=resolve;
+        try{ au.currentTime=0; }catch(e){}
+        au.play().catch(resolve);
+      });
+    }catch(e){}
+  }
+  btn.disabled=false; btn.innerHTML=old;
+}
+
+function escapeHtml(s){ return (s||'').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+// 中文行：仅当原文是英文且已有翻译时显示（原文本身就是中文的不重复显示）
+function zhOf(ch){
+  if(!ch || !ch.zh) return '';
+  if(/[\u4e00-\u9fff]/.test(ch.t||'')) return '';
+  return `<div class="word-zh">${escapeHtml(ch.zh)}</div>`;
+}
+
+document.getElementById('backBtn').onclick=()=>{ CUR=null; renderPortal(); };
+
+// ===================== 启动 =====================
+async function boot(){
+  detectFastestCDN();
+  registerAudioSW();
+  try{
+    const res=await fetch('data/index.json', {cache:'force-cache'});
+    INDEX=await res.json();
+  }catch(e){ INDEX=null; }
+  renderPortal();
+}
+boot();
+</script>
+</body>
+</html>
