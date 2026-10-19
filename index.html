@@ -262,7 +262,7 @@ function renderPortal(){
       <div class="sc-head"></div>
       <div class="sc-body">
         <div class="sc-icon"><i class="fa fa-book"></i></div>
-        <div class="sc-name">${m.title}</div>
+        <div class="sc-name">${m.name}</div>
         <div class="sc-desc">${m.units} 个单元 · ${m.lessons} 课预习</div>
         <div class="sc-foot"><span class="sc-prog">已就绪</span><span class="sc-go">进入预习 →</span></div>
       </div></div>`);
@@ -275,7 +275,7 @@ async function openLevel(levelKey){
   const m=INDEX.find(x=>x.level===levelKey); if(!m) return;
   document.getElementById('portal').style.display='none';
   const v=document.getElementById('viewer'); v.style.display='block';
-  document.getElementById('viewerTitle').textContent=m.title;
+  document.getElementById('viewerTitle').textContent=m.name;
   // 取该级别完整数据
   let data;
   if(CUR && CUR.level===levelKey && CUR.data){ data=CUR.data; }
