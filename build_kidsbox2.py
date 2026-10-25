@@ -117,12 +117,19 @@ def lesson_kind(name):
         return 'final'
     return 'normal'
 
+def unit_lesson(name):
+    """从文件名提取 (单元号, 课次号)；兼容源文件拼写错误（unti4-3，t/i 颠倒）"""
+    m = re.search(r'[Uu](?:nit|nti)\s*(\d+)\s*-\s*(\d+)', name)
+    if m:
+        return int(m.group(1)), int(m.group(2))
+    return None
+
 def lesson_sort_key(name):
     """课件排序：单元号、课次号；review/values/期末 排同单元最后"""
-    m = re.search(r'[Uu]nit\s*(\d+)\s*-\s*(\d+)', name)
+    m = unit_lesson(name)
     kind = lesson_kind(name)
     if m:
-        return (0, int(m.group(1)), int(m.group(2)), {'normal': 0, 'values': 1, 'review': 2, 'final': 3}[kind])
+        return (0, m[0], m[1], {'normal': 0, 'values': 1, 'review': 2, 'final': 3}[kind])
     return (1, 99, 99, 3)
 
 def get_audio_path(text):
@@ -144,9 +151,9 @@ def main():
         units_map = {}
         for f in files:
             bname = os.path.basename(f)
-            m = re.search(r'[Uu]nit\s*(\d+)\s*-\s*(\d+)', bname)
+            m = unit_lesson(bname)
             if m:
-                un, ln = int(m.group(1)), int(m.group(2))
+                un, ln = m
                 units_map.setdefault(un, []).append((ln, f))
             else:
                 units_map.setdefault('R', []).append((99, f))
@@ -184,20 +191,29 @@ def main():
                             out_imgs.append(f'kb_img/{key}/u{un}/L{ln}_p{sidx}_{i+1}.jpg')
                     out_slides.append({'idx': sidx, 'chips': out_chips, 'imgs': out_imgs})
                     lv_chips += len(out_chips)
-                # 课次命名：优先识别 Review/Values/期末，避免同课次号重名
+                # 课次命名：Review/Values/期末 带源文件单元范围（避免重名）；导入起始课用原文件名；其余 Lesson N
                 kind = lesson_kind(os.path.basename(f))
                 if kind == 'review':
-                    lname = 'Review 复习'
+                    scope = re.sub(r'^\d+\s+', '', os.path.basename(f)[:-5]).strip()
+                    scope = re.sub(r'^KB\d+\s*[-–]?\s*', '', scope)
+                    scope = re.sub(r'^(?:review|Review)\s*[-–]?\s*', '', scope)
+                    lname = ('Review 复习 ' + scope).strip()
                 elif kind == 'values':
-                    lname = 'Values 价值观'
+                    scope = re.sub(r'^\d+\s+', '', os.path.basename(f)[:-5]).strip()
+                    scope = re.sub(r'^KB\d+\s*[-–]?\s*', '', scope)
+                    scope = re.sub(r'^(?:value|values|valuse)\s*[-–]?\s*', '', scope, flags=re.I)
+                    lname = ('Values 价值观 ' + scope).strip()
                 elif kind == 'final':
                     lname = '期末复习'
+                elif un == 'R':
+                    # 起始导入课（Hello there / welcome 等）：用原文件名，去掉编号前缀
+                    lname = re.sub(r'^\d+\s+', '', re.sub(r'\.pptx$', '', os.path.basename(f))).strip()
                 else:
                     lname = f'Lesson {ln}'
                 lessons.append({'name': lname, 'type': 'lesson', 'slides': out_slides})
                 grand_lessons += 1
                 grand_chips += lv_chips
-            units.append({'num': un, 'name': (f'Unit {un}' if un != 'R' else '复习'), 'lessons': lessons})
+            units.append({'num': un, 'name': (f'Unit {un}' if un != 'R' else '起始与复习'), 'lessons': lessons})
         d_out = {'level': key, 'name': disp, 'units': units}
         json.dump(d_out, open(os.path.join(DATA_DIR, f'{key}.json'), 'w', encoding='utf-8'), ensure_ascii=False)
         index.append({'level': key, 'name': disp, 'units': len(units),

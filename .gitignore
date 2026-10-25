@@ -22,3 +22,4 @@ zh_failed.json
 # GitHub API 响应文件（可能含账号信息）
 resp_create.json
 resp_user.json
+build_kidsbox2.py
