@@ -16,7 +16,7 @@ const TARGETS = process.argv[2] && process.argv[2].startsWith('http')
   for (const t of TARGETS) {
     const ctx = await browser.newContext();
     const page = await ctx.newPage();
-    const course = t.name === 'POWERUP' ? 'PowerUp' : 'KidsBox';
+    const course = /POWERUP|8132/.test(t.url) ? 'PowerUp' : /WONDERSKILL|8133/.test(t.url) ? 'WonderSkills' : 'KidsBox';
     const logs = [];
     page.on('console', m => logs.push('[console] ' + m.text()));
     page.on('pageerror', e => logs.push('[pageerror] ' + e.message));
@@ -24,7 +24,7 @@ const TARGETS = process.argv[2] && process.argv[2].startsWith('http')
     page.on('response', r => { if (r.status() >= 400) logs.push('[http' + r.status() + '] ' + r.url().slice(-70)); });
 
     await page.addInitScript(course => {
-      try { localStorage.setItem(course === 'PowerUp' ? 'edge_gate_powerup_v1' : 'edge_gate_kidsbox_v1', '1'); } catch {}
+      try { localStorage.setItem(course === 'PowerUp' ? 'edge_gate_powerup_v1' : course === 'WonderSkills' ? 'edge_gate_wonderskills_v1' : 'edge_gate_kidsbox_v1', '1'); } catch {}
       window.__audioLog = [];
       const OrigAudio = window.Audio;
       window.Audio = function (src) {
