@@ -1,5 +1,5 @@
 /*
- * EDGE Tutor · Kids Box 课前预习 前端访问密码门（软门）
+ * EDGE Tutor · KB 课前预习 前端访问密码门（软门）
  * 静态站无后端，此为前端软门——仅用于过滤 casual 访客。密码哈希存于本文件，明文不出现。
  * 换密码：用 make_pass.py 生成新哈希，替换下面的 GATE_HASH 即可。
  */
@@ -46,8 +46,8 @@
   gate.id = 'edge-gate';
   gate.innerHTML =
     '<div class="card">' +
-    '<div class="logo">Kids Box<span> 课前预习</span></div>' +
-    '<div class="tip">Kids Box 英语 · 课前预习<br/>请输入访问密码</div>' +
+    '<div class="logo">KB<span> 课前预习</span></div>' +
+    '<div class="tip">KB 英语 · 课前预习<br/>请输入访问密码</div>' +
     '<input id="edge-pw" type="password" placeholder="访问密码" autocomplete="off" />' +
     '<button id="edge-go">进入</button>' +
     '<div class="err" id="edge-err"></div>' +
